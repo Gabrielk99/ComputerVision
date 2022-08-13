@@ -1,5 +1,6 @@
 from typing import List, Tuple
 import mediapipe as mp
+from mediapipe.framework.formats.landmark_pb2 import NormalizedLandmarkList
 import numpy as np
 import cv2
 
@@ -21,6 +22,12 @@ class HandDetector(object):
             MIN_TRACKING_CONFIDENCE (float): If tracking frames, then tracking 
                                         confidence
         """        
+        self.mode = STATIC_IMAGE_MODE
+        self.num_hands = MAX_NUM_HANDS
+        self.model = MODEL_COMPLEXITY
+        self.min_detection_confidence = MIN_DETECTION_CONFIDENCE
+        self.min_tracking_confidence = MIN_TRACKING_CONFIDENCE
+        
         self.mpHands = mp.solutions.hands
         self.hands =  self.mpHands.Hands(static_image_mode=STATIC_IMAGE_MODE,
                                          max_num_hands=MAX_NUM_HANDS,
@@ -61,8 +68,25 @@ class HandDetector(object):
             img (np.array): image to draw the handmarks on
         """        
         for handMark in handsLms:
-            for id,lm in enumerate(handMark.landmark):
-                height,width,chanels = img.shape
-                cx,cy = int(lm.x*width),int(lm.y*height)
-                
             self.mpDraw.draw_landmarks(img,handMark,self.mpHands.HAND_CONNECTIONS)
+            
+    def get_positions_marks(self,imgShape:tuple,handMark:NormalizedLandmarkList)->list:
+        """
+           Returns a list of positions for a given hand marker
+
+        Args:
+            imgShape (tuple): image shape to calculate positions
+            handMark (NormalizedLandmarkList): the handmark to get positions for
+
+        Returns:
+            list: all position off handmark
+        """        
+    
+        height,width,chanels = imgShape
+        listPositions = {}
+        for id,lm in enumerate(handMark.landmark):
+            cx,cy = int(lm.x*width),int(lm.y*height)
+            listPositions[id] = {"cx":cx, "cy":cy}
+        
+        return listPositions
+                        
