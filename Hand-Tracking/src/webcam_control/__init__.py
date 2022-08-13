@@ -1,1 +1,1 @@
-from .webcam import start_video_processing
+from .webcam import WebCamController
